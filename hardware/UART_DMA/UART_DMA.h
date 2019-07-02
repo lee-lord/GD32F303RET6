@@ -12,15 +12,31 @@ U8 *TxBuff;//[TxBufLen];
 U8 busy;
 U8 state;	
 }File_Buffer;
+/*
+   if(dev==USART1)
+        {dev->dmadev=DMA1;
+       // nvic_irq_set_priority(dev->irq_num,13);
+        }
+    else if(dev==USART2)   
+         {dev->dmadev=DMA1;//nvic_irq_set_priority(dev->irq_num,13);//set usart IRQ priority than SYSTICK IRQ's 14 by lee
+                  }
+    else if(dev==USART3)
+         {dev->dmadev=DMA1;//nvic_irq_set_priority(dev->irq_num,15);//set usart IRQ priority than SYSTICK IRQ's 14 by lee
+          // nvic_irq_set_priority(dev->irq_num,13);
+          ch1--tx 
+          ch2--rx
+         }
+    else if(dev==UART4)
+        {dev->dmadev=DMA2;//nvic_irq_set_priority(dev->irq_num,13);//set usart IRQ priority than SYSTICK IRQ's 14 by lee
+       // nvic_irq_set_priority(dev->irq_num,13);
+        }
+*/
 
+void usartAC_config(U32 UartX,U32 baudrate);
+void UartA_DmaInitial(U32 UartX);
 
-void usartA_config(void);
-void UartA_DmaInitial(void);
-
-void usartB_config(void);
 void UartB_DmaInitial(void);
 
-void usartC_config(void);
 void UartC_DmaInitial(void);
 
 
