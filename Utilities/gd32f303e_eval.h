@@ -71,13 +71,13 @@ typedef enum
 /* eval board low layer led */
 #define LEDn                             4U
 
-#define LED2_PIN                         GPIO_PIN_0
-#define LED2_GPIO_PORT                   GPIOF
-#define LED2_GPIO_CLK                    RCU_GPIOF
+#define LED2_PIN                         GPIO_PIN_13
+#define LED2_GPIO_PORT                   GPIOC
+#define LED2_GPIO_CLK                    RCU_GPIOC
   
-#define LED3_PIN                         GPIO_PIN_1
-#define LED3_GPIO_PORT                   GPIOF
-#define LED3_GPIO_CLK                    RCU_GPIOF
+#define LED3_PIN                         GPIO_PIN_7
+#define LED3_GPIO_PORT                   GPIOC
+#define LED3_GPIO_CLK                    RCU_GPIOC
   
 #define LED4_PIN                         GPIO_PIN_2
 #define LED4_GPIO_PORT                   GPIOF

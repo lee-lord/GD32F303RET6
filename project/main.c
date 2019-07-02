@@ -41,6 +41,7 @@ OF SUCH DAMAGE.
 #include <stdio.h>
 #include "main.h"
 #include "gd32f303e_eval.h"
+#include "hardware.h"
 
 /*!
     \brief      toggle the led every 500ms
@@ -75,15 +76,16 @@ void led_spark(void)
 
 int main(void)
 {
+	float i =0.001f,a,b;
     /* configure systick */
     systick_config();
     /* initilize the LEDs, USART and key */
     gd_eval_led_init(LED2); 
     gd_eval_led_init(LED3); 
-    gd_eval_led_init(LED4);
-    gd_eval_com_init(EVAL_COM1);
-    gd_eval_key_init(KEY_WAKEUP, KEY_MODE_GPIO);
-    
+    //gd_eval_com_init(EVAL_COM1);
+    //gd_eval_key_init(KEY_WAKEUP, KEY_MODE_GPIO);
+    ///here initial the UART_DMA 
+	  UartC_DmaInitial(USART2);
     /* print out the clock frequency of system, AHB, APB1 and APB2 */
     printf("\r\nCK_SYS is %d", rcu_clock_freq_get(CK_SYS));
     printf("\r\nCK_AHB is %d", rcu_clock_freq_get(CK_AHB));
@@ -91,12 +93,18 @@ int main(void)
     printf("\r\nCK_APB2 is %d", rcu_clock_freq_get(CK_APB2));
 
     while (1){
-        if(RESET == gd_eval_key_state_get(KEY_WAKEUP)){
+			
+        if(RESET == gd_eval_key_state_get(KEY_WAKEUP))
+					{
             gd_eval_led_on(LED3);
             delay_1ms(500);
             gd_eval_led_off(LED3);
-            gd_eval_led_toggle(LED4);
-        }
+            gd_eval_led_toggle(LED2);
+						a=i+a;
+						b=i+a;
+						b=b*a;
+						printf("a=%f,b=%f",a,b);
+           }
     }
 }
 

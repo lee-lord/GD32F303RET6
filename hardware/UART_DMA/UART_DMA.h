@@ -34,10 +34,10 @@ U8 state;
 
 void usartAC_config(U32 UartX,U32 baudrate);
 void UartA_DmaInitial(U32 UartX);
+void UartC_DmaInitial(U32 UartX);
 
 void UartB_DmaInitial(void);
 
-void UartC_DmaInitial(void);
 
 
 

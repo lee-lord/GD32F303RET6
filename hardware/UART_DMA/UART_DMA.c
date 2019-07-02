@@ -40,7 +40,7 @@ void UartC_DmaInitial(U32 UartX)//U32 DMA_X,dma_channel_enum channelRx,dma_chann
     /* enable DMA0 */
     rcu_periph_clock_enable(RCU_DMA0);	//使能DMA传输
     /* initialize USART */
-    UartA_DmaInitial(USART2,115200);
+    usartAC_config(USART2,115200);
     //////////////initial TX DMA 
     /* deinitialize DMA channel3(USART0 tx) */
     dma_deinit(DMA0, DMA_CH1);   //将DMA的通道1寄存器重设为缺省值
@@ -118,7 +118,7 @@ void UartA_DmaInitial(U32 UartX)//U32 DMA_X,dma_channel_enum channelRx,dma_chann
     /* enable DMA0 */
     rcu_periph_clock_enable(RCU_DMA0);	//使能DMA传输
     /* initialize USART */
-    usartA_config(USART0,115200);
+    usartAC_config(USART0,115200);
     //////////////initial TX DMA 
     /* deinitialize DMA channel3(USART0 tx) */
     dma_deinit(DMA0, DMA_CH3);   //将DMA的通道1寄存器重设为缺省值
