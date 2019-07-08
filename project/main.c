@@ -66,6 +66,12 @@ void led_spark(void)
         timingdelaylocal = 1000U;
     }
 }
+void nvic_config(void)
+{
+    nvic_irq_enable(DMA0_Channel1_IRQn, 0, 1);
+    nvic_irq_enable(DMA0_Channel3_IRQn,0,2);
+
+}
 
 /*!
     \brief      main function
@@ -75,44 +81,52 @@ void led_spark(void)
 */
 
 int main(void)
-{
-	float i =0.001f,a,b;
-    /* configure systick */
+{  float i=0,a,b;
+    U16 dataLen=0,datalen2=0;
+    U8 tmp=0;
     systick_config();
-    /* initilize the LEDs, USART and key */
-    gd_eval_led_init(LED2); 
-    gd_eval_led_init(LED3); 
-    //gd_eval_com_init(EVAL_COM1);
-    //gd_eval_key_init(KEY_WAKEUP, KEY_MODE_GPIO);
-    ///here initial the UART_DMA 
-	  UartC_DmaInitial(USART2);
-    /* print out the clock frequency of system, AHB, APB1 and APB2 */
-    printf("\r\nCK_SYS is %d", rcu_clock_freq_get(CK_SYS));
-    printf("\r\nCK_AHB is %d", rcu_clock_freq_get(CK_AHB));
-    printf("\r\nCK_APB1 is %d", rcu_clock_freq_get(CK_APB1));
-    printf("\r\nCK_APB2 is %d", rcu_clock_freq_get(CK_APB2));
+    nvic_config();
+    gd_eval_led_init(LED2);
+    gd_eval_led_init(LED3);
+    UartC_DmaInitial(USART2);
+    UartA_DmaInitial(USART0);
 
-    while (1){
-			
-        if(RESET == gd_eval_key_state_get(KEY_WAKEUP))
-					{
-            gd_eval_led_on(LED3);
-            delay_1ms(500);
-            gd_eval_led_off(LED3);
-            gd_eval_led_toggle(LED2);
-						a=i+a;
-						b=i+a;
-						b=b*a;
-						printf("a=%f,b=%f",a,b);
-           }
+    while(1){
+        /* turn on led2, turn off led5 */
+        gd_eval_led_on(LED2);
+        delay_1ms(100);
+        /* turn on led3, turn off led2 */
+        gd_eval_led_on(LED3);
+        gd_eval_led_off(LED2);
+        delay_1ms(100);
+        gd_eval_led_off(LED3);
+        delay_1ms(100);
+        i+=0.5f;
+        a=b+i;
+        b=i+1;
+        dataLen = UartC_Available();
+        datalen2 = UartA_Available();
+      //  UCprintf("i=%f,b=%f,a=%f\r\n",i,b,a);//&(USART_DATA(USART2))
+			//  UAprintf("i=%f,b=%f,a=%f\r\n",i,b,a);
+        if(datalen2>0)
+          {
+            for(U16 m=0;m<datalen2;m++)
+            {
+               tmp = UartC_read();
+               tmp = UartA_read();							
+            }
+            UCprintf("i=%f,b=%f,a=%f\r\n",i,b,a);// ,Uart2Add=%x,,&(USART_DATA(USART2))
+            UAprintf("i=%f,b=%f,a=%f\r\n",i,b,a);
+          }
     }
 }
 
 /* retarget the C library printf function to the USART */
 int fputc(int ch, FILE *f)
 {
-    usart_data_transmit(EVAL_COM1, (uint8_t)ch);
-    while(RESET == usart_flag_get(EVAL_COM1, USART_FLAG_TBE));
-
+    // usart_data_transmit(EVAL_COM2, (uint8_t)ch);
+    // while(RESET == usart_flag_get(EVAL_COM2, USART_FLAG_TBE));
+     U8 data=(uint8_t)ch;
+     UartC_write(&data,1);
     return ch;
 }

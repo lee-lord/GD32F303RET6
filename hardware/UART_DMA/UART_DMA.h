@@ -2,6 +2,11 @@
 #define _UART_DMA_H_
 #include "sysType.h"
 #define TxBufLen  1024
+
+#define USART0_DATA_ADDRESS    ((uint32_t)0x40013804)
+#define USART1_DATA_ADDRESS    ((uint32_t)0x40004404)
+#define USART2_DATA_ADDRESS    ((uint32_t)0x40004804)
+
 typedef struct {
 U16 Txfile_head;
 U16 Txfile_tail;
@@ -50,8 +55,12 @@ U16 UartA_Available(void);
 U16 UartB_Available(void);
 U16 UartC_Available(void);
 	
-__inline void UartA_write(U8 * data,U16 len);
-__inline void UartB_write(U8 * data,U16 len);	
-__inline void UartC_write(U8 * data,U16 len);
+ void UartA_write(U8 * data,U16 len);
+ void UartB_write(U8 * data,U16 len);	
+ void UartC_write(U8 * data,U16 len);
 
+ 
+ 
+void UCprintf(const U8 *fmt, ...);
+void UAprintf(const U8 *fmt, ...);
 #endif

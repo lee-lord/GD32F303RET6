@@ -701,6 +701,11 @@
               <FileType>5</FileType>
               <FilePath>..\..\hardware\hardware.h</FilePath>
             </File>
+            <File>
+              <FileName>sysType.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\hardware\MATH\sysType.h</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
@@ -1398,6 +1403,11 @@
               <FileType>5</FileType>
               <FilePath>..\..\hardware\hardware.h</FilePath>
             </File>
+            <File>
+              <FileName>sysType.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\hardware\MATH\sysType.h</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
@@ -1546,7 +1556,7 @@
             <RestoreSysVw>1</RestoreSysVw>
           </Target>
           <RunDebugAfterBuild>0</RunDebugAfterBuild>
-          <TargetSelection>6</TargetSelection>
+          <TargetSelection>11</TargetSelection>
           <SimDlls>
             <CpuDll></CpuDll>
             <CpuDllArguments></CpuDllArguments>
@@ -1560,7 +1570,7 @@
             <PeripheralDll></PeripheralDll>
             <PeripheralDllArguments></PeripheralDllArguments>
             <InitializationFile></InitializationFile>
-            <Driver>Segger\JL2CM3.dll</Driver>
+            <Driver>STLink\ST-LINKIII-KEIL_SWO.dll</Driver>
           </TargetDlls>
         </DebugOption>
         <Utilities>
@@ -1759,7 +1769,7 @@
             <wLevel>2</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
-            <uC99>0</uC99>
+            <uC99>1</uC99>
             <useXO>0</useXO>
             <v6Lang>0</v6Lang>
             <v6LangP>0</v6LangP>
@@ -2095,6 +2105,11 @@
               <FileName>hardware.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\..\hardware\hardware.h</FilePath>
+            </File>
+            <File>
+              <FileName>sysType.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\hardware\MATH\sysType.h</FilePath>
             </File>
           </Files>
         </Group>
