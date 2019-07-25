@@ -40,6 +40,9 @@ OF SUCH DAMAGE.
 #include "main.h"
 #include "systick.h"
 
+
+
+
 /*!
     \brief      this function handles NMI exception
     \param[in]  none
@@ -138,8 +141,13 @@ void PendSV_Handler(void)
     \param[out] none
     \retval     none
 */
+
+/////here we will define a microS() and a mills() function.
 void SysTick_Handler(void)
 {
-    led_spark();
-    delay_decrement();
+    //led_spark();
+    //delay_decrement();
+    Update_SystemTick();
 }
+
+

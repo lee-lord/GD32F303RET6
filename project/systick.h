@@ -40,12 +40,28 @@ OF SUCH DAMAGE.
 #define SYS_TICK_H
 
 #include <stdint.h>
+#include "sysType.h"
+
+
+#define SYSTIM_PRE_MS 1000
+#define SYSTIM_PER_US 1000000
+
+#define CPU_CLK 120000000
+#define Pre_MS 1000
+#define SYSTICK_PRE_US 120
+//CPU_CLK/1000000
+
+#define SYSTICK_RELOAD  CPU_CLK/1000 -1
+#define SYSTEMTICK_PERIOD_MS       1               //1ms一次systemTick
+extern volatile uint32_t systemTickMs;
+
+__inline void Update_SystemTick(void);
+__inline uint32_t mills(void);
+__inline U32 micros(void);
 
 /* configure systick */
 void systick_config(void);
 /* delay a time in milliseconds */
 void delay_1ms(uint32_t count);
-/* delay decrement */
-void delay_decrement(void);
 
 #endif /* SYS_TICK_H */

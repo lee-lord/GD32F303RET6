@@ -10,6 +10,7 @@
 #include "SPI.h"
 #include "Timer.h"
 #include "UART_DMA.h"
-
+#include "FOCdriver.h"
+#include "TLE5012B.h"
 
 #endif

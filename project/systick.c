@@ -38,15 +38,24 @@ OF SUCH DAMAGE.
 
 #include "gd32f30x.h"
 #include "systick.h"
+#include "sysType.h"
 
-volatile static uint32_t delay;
-
+volatile static U32 delay;
+volatile U32 systemTickMs;
 /*!
     \brief      configure systick
     \param[in]  none
     \param[out] none
     \retval     none
 */
+// void SystemTick_Init(U32 PreCLK)
+// {
+//     RCC_ClocksTypeDef RCC_Clocks;
+//     RCC_GetClocksFreq(&RCC_Clocks);
+//     //配置10ms中断
+// //  SysTick_Config(RCC_Clocks.SYSCLK_Frequency / PreCLK);
+// }
+/// 1ms 
 void systick_config(void)
 {
     /* setup systick timer for 1000Hz interrupts */
@@ -57,6 +66,11 @@ void systick_config(void)
     }
     /* configure the systick handler priority */
     NVIC_SetPriority(SysTick_IRQn, 0x00U);
+    systemTickMs = 0;
+    // nvic_priority_group_set(NVIC_PRIGROUP_PRE1_SUB3);
+    // nvic_irq_enable(SysTick_IRQn, 0, 0);
+
+
 }
 
 /*!
@@ -65,23 +79,39 @@ void systick_config(void)
     \param[out] none
     \retval     none
 */
-void delay_1ms(uint32_t count)
+void delay_1ms(U32 count)
 {
-    delay = count;
-
-    while(0U != delay){
-    }
+    U64 tmp = (U64)count+(U64)systemTickMs; 
+    if(tmp>0xffffffff) 
+      {
+        delay = tmp-0xffffffff;
+        while(systemTickMs != 0xffffffff){} 
+        while(systemTickMs != delay){}
+      }
+    else{
+            delay = count+systemTickMs;
+            while(systemTickMs != delay){} 
+       }
+    
 }
 
-/*!
-    \brief      delay decrement
-    \param[in]  none
-    \param[out] none
-    \retval     none
-*/
-void delay_decrement(void)
+  void Update_SystemTick(){
+    systemTickMs += SYSTEMTICK_PERIOD_MS;
+}
+
+  U32 micros(void)
 {
-    if (0U != delay){
-        delay--;
-    }
+    U32 Fm=0,Lm=0;
+    U32 tickValue=0;
+    do{
+        Fm=systemTickMs;
+      tickValue=SysTick->VAL;
+        Lm=systemTickMs;
+    }while(Fm!=Lm);
+    return (1000*(Lm+1)-tickValue/SYSTICK_PRE_US);
+}
+
+U32 millis(void)
+{
+    return systemTickMs;
 }

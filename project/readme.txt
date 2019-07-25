@@ -40,11 +40,16 @@ OF SUCH DAMAGE.
 description of SysTick configuration, use of EVAL_COM and key. 
 需要移植UART——DMA （可以配置的4个UART带DMA）
         ADC——DMA   （硬件过采样的16bit的ADC）
-		SPI 
+		SPI  driver finish 
 		I2C
-		TImer ---PWM 
-		         PPM
-				 
+		TImer ---PWM  driver finish
+		         PPM  PWM in driver finish
+				 ISR  driver and ISR function frame finish
 				 使用官方历程中的硬件初始化方法，来替换原来的stm的硬件初始化方法。
 				 凡是涉及到硬件操作的都要使用官方提供的方法来操作。所以这次得移植将是大工程，很多地方要重新写和重构。
- 
+      功能测试还未开始。
+ APP 层开始；2019-7-23
+        TLE-5012B 
+		FOC-driver
+		uart 通讯，调试
+		参数保存-parameter。

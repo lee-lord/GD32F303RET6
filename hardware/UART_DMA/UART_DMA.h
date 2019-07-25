@@ -1,5 +1,6 @@
 #ifndef _UART_DMA_H_
 #define _UART_DMA_H_
+#include "gd32f30x.h"
 #include "sysType.h"
 #define TxBufLen  1024
 
@@ -17,6 +18,15 @@ U8 *TxBuff;//[TxBufLen];
 U8 busy;
 U8 state;	
 }File_Buffer;
+
+
+extern volatile File_Buffer Uart1DMAbuf;
+extern volatile File_Buffer Uart2DMAbuf;
+
+ 
+extern volatile dma_parameter_struct DMA_CH1_Tx_InitStruc;
+extern volatile dma_parameter_struct DMA_CH2_Tx_InitStruc;
+
 /*
    if(dev==USART1)
         {dev->dmadev=DMA1;
@@ -41,26 +51,28 @@ void usartAC_config(U32 UartX,U32 baudrate);
 void UartA_DmaInitial(U32 UartX);
 void UartC_DmaInitial(U32 UartX);
 
-void UartB_DmaInitial(void);
+// void UartB_DmaInitial(void);
 
-
-
-
-
-U8 UartA_read(void);
-U8 UartB_read(void);
-U8 UartC_read(void);
+__inline U8 UartA_read(void);
+__inline U8 UartB_read(void);
+__inline U8 UartC_read(void);
 	
-U16 UartA_Available(void);
-U16 UartB_Available(void);
-U16 UartC_Available(void);
+__inline U16 UartA_Available(void);
+__inline U16 UartB_Available(void);
+__inline U16 UartC_Available(void);
 	
- void UartA_write(U8 * data,U16 len);
- void UartB_write(U8 * data,U16 len);	
- void UartC_write(U8 * data,U16 len);
+__inline  void UartA_write(U8 * data,U16 len);
+__inline  void UartB_write(U8 * data,U16 len);	
+__inline  void UartC_write(U8 * data,U16 len);
+
+
+
+
+
 
  
  
 void UCprintf(const U8 *fmt, ...);
 void UAprintf(const U8 *fmt, ...);
 #endif
+

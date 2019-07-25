@@ -706,6 +706,41 @@
               <FileType>5</FileType>
               <FilePath>..\..\hardware\MATH\sysType.h</FilePath>
             </File>
+            <File>
+              <FileName>PWMout.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\hardware\PWMout\PWMout.c</FilePath>
+            </File>
+            <File>
+              <FileName>SPI.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\hardware\SPI\SPI.c</FilePath>
+            </File>
+            <File>
+              <FileName>PWM_PPM_capture.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\hardware\PWM_PPM_capture\PWM_PPM_capture.c</FilePath>
+            </File>
+            <File>
+              <FileName>Timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\hardware\TIMER\Timer.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>system</GroupName>
+          <Files>
+            <File>
+              <FileName>TLE5012B.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\SYSTEM\TLE5012B\TLE5012B.c</FilePath>
+            </File>
+            <File>
+              <FileName>FOCdriver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\SYSTEM\FOCdriver\FOCdriver.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
@@ -1408,6 +1443,41 @@
               <FileType>5</FileType>
               <FilePath>..\..\hardware\MATH\sysType.h</FilePath>
             </File>
+            <File>
+              <FileName>PWMout.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\hardware\PWMout\PWMout.c</FilePath>
+            </File>
+            <File>
+              <FileName>SPI.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\hardware\SPI\SPI.c</FilePath>
+            </File>
+            <File>
+              <FileName>PWM_PPM_capture.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\hardware\PWM_PPM_capture\PWM_PPM_capture.c</FilePath>
+            </File>
+            <File>
+              <FileName>Timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\hardware\TIMER\Timer.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>system</GroupName>
+          <Files>
+            <File>
+              <FileName>TLE5012B.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\SYSTEM\TLE5012B\TLE5012B.c</FilePath>
+            </File>
+            <File>
+              <FileName>FOCdriver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\SYSTEM\FOCdriver\FOCdriver.c</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
@@ -1454,7 +1524,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>.\output\</OutputDirectory>
-          <OutputName>Project</OutputName>
+          <OutputName>GD303_GImblae</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
@@ -1633,7 +1703,7 @@
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
-            <useUlib>1</useUlib>
+            <useUlib>0</useUlib>
             <EndSel>0</EndSel>
             <uLtcg>0</uLtcg>
             <nSecure>0</nSecure>
@@ -1757,8 +1827,8 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>1</Optim>
-            <oTime>0</oTime>
+            <Optim>0</Optim>
+            <oTime>1</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
             <Strict>0</Strict>
@@ -1776,10 +1846,10 @@
             <vShortEn>0</vShortEn>
             <vShortWch>0</vShortWch>
             <VariousControls>
-              <MiscControls></MiscControls>
+              <MiscControls>--gnu</MiscControls>
               <Define>USE_STDPERIPH_DRIVER,GD32F30X_HD</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Firmware\CMSIS;..\..\Firmware\CMSIS\GD\GD32F30x\Include;..\..\Firmware\GD32F30x_standard_peripheral\Include;..\..\Utilities;..\;..\..\hardware;..\..\hardware\ADC_DMA;..\..\hardware\GPIO;..\..\hardware\I2C;..\..\hardware\MATH;..\..\hardware\PWMout;..\..\hardware\PWM_PPM_capture;..\..\hardware\SPI;..\..\hardware\TIMER;..\..\hardware\UART_DMA</IncludePath>
+              <IncludePath>..\..\Firmware\CMSIS;..\..\Firmware\CMSIS\GD\GD32F30x\Include;..\..\Firmware\GD32F30x_standard_peripheral\Include;..\..\Utilities;..\;..\..\hardware;..\..\hardware\ADC_DMA;..\..\hardware\GPIO;..\..\hardware\I2C;..\..\hardware\MATH;..\..\hardware\PWMout;..\..\hardware\PWM_PPM_capture;..\..\hardware\SPI;..\..\hardware\TIMER;..\..\hardware\UART_DMA;..\..\SYSTEM\FOCdriver;..\..\SYSTEM\TLE5012B</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -2110,6 +2180,41 @@
               <FileName>sysType.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\..\hardware\MATH\sysType.h</FilePath>
+            </File>
+            <File>
+              <FileName>PWMout.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\hardware\PWMout\PWMout.c</FilePath>
+            </File>
+            <File>
+              <FileName>SPI.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\hardware\SPI\SPI.c</FilePath>
+            </File>
+            <File>
+              <FileName>PWM_PPM_capture.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\hardware\PWM_PPM_capture\PWM_PPM_capture.c</FilePath>
+            </File>
+            <File>
+              <FileName>Timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\hardware\TIMER\Timer.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>system</GroupName>
+          <Files>
+            <File>
+              <FileName>TLE5012B.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\SYSTEM\TLE5012B\TLE5012B.c</FilePath>
+            </File>
+            <File>
+              <FileName>FOCdriver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\SYSTEM\FOCdriver\FOCdriver.c</FilePath>
             </File>
           </Files>
         </Group>

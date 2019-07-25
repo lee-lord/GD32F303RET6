@@ -68,8 +68,15 @@ void led_spark(void)
 }
 void nvic_config(void)
 {
-    nvic_irq_enable(DMA0_Channel1_IRQn, 0, 1);
-    nvic_irq_enable(DMA0_Channel3_IRQn,0,2);
+    nvic_priority_group_set(NVIC_PRIGROUP_PRE1_SUB3);
+    nvic_irq_enable(TIMER7_Channel_IRQn, 1, 0);//pwm in capture
+
+    nvic_irq_enable(DMA0_Channel1_IRQn, 1, 1);
+    nvic_irq_enable(DMA0_Channel3_IRQn,1,2);
+    /// timer4 ISR at 10Khz
+    nvic_irq_enable(TIMER4_IRQn, 0, 1); 
+    ////systemtick
+    nvic_irq_enable(SysTick_IRQn, 0, 0);
 
 }
 
@@ -79,18 +86,21 @@ void nvic_config(void)
     \param[out] none
     \retval     none
 */
-
+U32 tmp=0;
 int main(void)
 {  float i=0,a,b;
     U16 dataLen=0,datalen2=0;
-    U8 tmp=0;
+    
     systick_config();
     nvic_config();
     gd_eval_led_init(LED2);
     gd_eval_led_init(LED3);
     UartC_DmaInitial(USART2);
     UartA_DmaInitial(USART0);
-
+    PWM_PPM_inInitial();
+    TLE5012B_initialise();
+    PWMoutInitial();
+    Timerx_Init(10000,120);//will start the motor.
     while(1){
         /* turn on led2, turn off led5 */
         gd_eval_led_on(LED2);
@@ -106,17 +116,22 @@ int main(void)
         b=i+1;
         dataLen = UartC_Available();
         datalen2 = UartA_Available();
-      //  UCprintf("i=%f,b=%f,a=%f\r\n",i,b,a);//&(USART_DATA(USART2))
-			//  UAprintf("i=%f,b=%f,a=%f\r\n",i,b,a);
-        if(datalen2>0)
+			   tmp = micros();
+         UCprintf("i=%f,b=%f,time=%dus\r\n",i,b,tmp);// ,Uart2Add=%x,,&(USART_DATA(USART2))
+        tmp = micros();
+			   UAprintf("i=%f,b=%f,time=%dus\r\n",i,b,tmp);
+       if(datalen2>0)
           {
             for(U16 m=0;m<datalen2;m++)
-            {
+            {  if(dataLen)
                tmp = UartC_read();
-               tmp = UartA_read();							
-            }
-            UCprintf("i=%f,b=%f,a=%f\r\n",i,b,a);// ,Uart2Add=%x,,&(USART_DATA(USART2))
-            UAprintf("i=%f,b=%f,a=%f\r\n",i,b,a);
+							if(datalen2)
+							 tmp = UartA_read();							
+						}
+						tmp = micros();
+           // UCprintf("i=%f,a=%f time=%d us\r\n",i,b,tmp);// ,Uart2Add=%x,,&(USART_DATA(USART2))
+            tmp = micros();
+						UAprintf("i=%f,a=%f time=%d us\r\n",i,b,tmp);
           }
     }
 }

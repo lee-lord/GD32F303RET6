@@ -281,9 +281,9 @@ ARM Macro Assembler    Page 5
    [WEAK]
   158 00000000                 IMPORT           SystemInit
   159 00000000                 IMPORT           __main
-  160 00000000 4806            LDR              R0, =SystemInit
+  160 00000000 4809            LDR              R0, =SystemInit
   161 00000002 4780            BLX              R0
-  162 00000004 4806            LDR              R0, =__main
+  162 00000004 4809            LDR              R0, =__main
   163 00000006 4700            BX               R0
   164 00000008                 ENDP
   165 00000008         
@@ -561,24 +561,43 @@ ARM Macro Assembler    Page 9
   341 0000001C         ; user Initial Stack & Heap
   342 0000001C         
   343 0000001C                 IF               :DEF:__MICROLIB
-  344 0000001C         
-  345 0000001C                 EXPORT           __initial_sp
-  346 0000001C                 EXPORT           __heap_base
-  347 0000001C                 EXPORT           __heap_limit
-  348 0000001C         
-  349 0000001C                 ELSE
-  364                          ENDIF
-  365 0000001C         
-  366 0000001C                 END
+  350 0000001C         
+  351 0000001C                 IMPORT           __use_two_region_memory
+  352 0000001C                 EXPORT           __user_initial_stackheap
+  353 0000001C         
+  354 0000001C         __user_initial_stackheap
+                               PROC
+  355 0000001C 4804            LDR              R0, =  Heap_Mem
+  356 0000001E 4905            LDR              R1, =(Stack_Mem + Stack_Size)
+  357 00000020 4A05            LDR              R2, = (Heap_Mem +  Heap_Size)
+  358 00000022 4B06            LDR              R3, = Stack_Mem
+  359 00000024 4770            BX               LR
+  360 00000026                 ENDP
+  361 00000026         
+  362 00000026 00 00           ALIGN
+  363 00000028         
+  364 00000028                 ENDIF
+  365 00000028         
+  366 00000028                 END
               00000000 
+              00000000 
+              00000000 
+              00002000 
+
+
+
+ARM Macro Assembler    Page 10 
+
+
+              00002000 
               00000000 
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
 erwork --depend=.\output\startup_gd32f30x_hd.d -o.\output\startup_gd32f30x_hd.o
  -IE:\GD32F4\GD32F303RE_project\project\Keil_project\RTE -IC:\Keil_v5\ARM\PACK\
 GigaDevice\GD32F30x_DFP\1.1.0\Device\Include -IC:\Keil_v5\ARM\CMSIS\Include --p
-redefine="__MICROLIB SETA 1" --predefine="__UVISION_VERSION SETA 517" --predefi
-ne="GD32F30X_HD SETA 1" --list=.\list\startup_gd32f30x_hd.lst ..\..\Firmware\CM
-SIS\GD\GD32F30x\Source\ARM\startup_gd32f30x_hd.s
+redefine="__UVISION_VERSION SETA 517" --predefine="GD32F30X_HD SETA 1" --list=.
+\list\startup_gd32f30x_hd.lst ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\start
+up_gd32f30x_hd.s
 
 
 
@@ -601,8 +620,11 @@ Symbol: Stack_Mem
       At line 46 in file ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\startup_gd
 32f30x_hd.s
    Uses
-      None
-Comment: Stack_Mem unused
+      At line 356 in file ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\startup_g
+d32f30x_hd.s
+      At line 358 in file ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\startup_g
+d32f30x_hd.s
+
 __initial_sp 00002000
 
 Symbol: __initial_sp
@@ -612,9 +634,7 @@ Symbol: __initial_sp
    Uses
       At line 70 in file ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\startup_gd
 32f30x_hd.s
-      At line 345 in file ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\startup_g
-d32f30x_hd.s
-
+Comment: __initial_sp used once
 3 symbols
 
 
@@ -638,8 +658,11 @@ Symbol: Heap_Mem
       At line 58 in file ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\startup_gd
 32f30x_hd.s
    Uses
-      None
-Comment: Heap_Mem unused
+      At line 355 in file ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\startup_g
+d32f30x_hd.s
+      At line 357 in file ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\startup_g
+d32f30x_hd.s
+
 __heap_base 00000000
 
 Symbol: __heap_base
@@ -647,9 +670,8 @@ Symbol: __heap_base
       At line 57 in file ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\startup_gd
 32f30x_hd.s
    Uses
-      At line 346 in file ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\startup_g
-d32f30x_hd.s
-Comment: __heap_base used once
+      None
+Comment: __heap_base unused
 __heap_limit 00002000
 
 Symbol: __heap_limit
@@ -657,9 +679,8 @@ Symbol: __heap_limit
       At line 59 in file ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\startup_gd
 32f30x_hd.s
    Uses
-      At line 347 in file ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\startup_g
-d32f30x_hd.s
-Comment: __heap_limit used once
+      None
+Comment: __heap_limit unused
 4 symbols
 
 
@@ -1649,7 +1670,17 @@ d32f30x_hd.s
       At line 213 in file ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\startup_g
 d32f30x_hd.s
 
-72 symbols
+__user_initial_stackheap 0000001C
+
+Symbol: __user_initial_stackheap
+   Definitions
+      At line 354 in file ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\startup_g
+d32f30x_hd.s
+   Uses
+      At line 352 in file ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\startup_g
+d32f30x_hd.s
+Comment: __user_initial_stackheap used once
+73 symbols
 
 
 
@@ -1665,7 +1696,9 @@ Symbol: Heap_Size
    Uses
       At line 58 in file ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\startup_gd
 32f30x_hd.s
-Comment: Heap_Size used once
+      At line 357 in file ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\startup_g
+d32f30x_hd.s
+
 Stack_Size 00002000
 
 Symbol: Stack_Size
@@ -1675,7 +1708,9 @@ Symbol: Stack_Size
    Uses
       At line 46 in file ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\startup_gd
 32f30x_hd.s
-Comment: Stack_Size used once
+      At line 356 in file ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\startup_g
+d32f30x_hd.s
+
 __Vectors_Size 00000130
 
 Symbol: __Vectors_Size
@@ -1713,5 +1748,14 @@ d32f30x_hd.s
       At line 162 in file ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\startup_g
 d32f30x_hd.s
 Comment: __main used once
-2 symbols
-423 symbols in table
+__use_two_region_memory 00000000
+
+Symbol: __use_two_region_memory
+   Definitions
+      At line 351 in file ..\..\Firmware\CMSIS\GD\GD32F30x\Source\ARM\startup_g
+d32f30x_hd.s
+   Uses
+      None
+Comment: __use_two_region_memory unused
+3 symbols
+426 symbols in table
