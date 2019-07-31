@@ -427,11 +427,6 @@
               <FileType>1</FileType>
               <FilePath>..\main.c</FilePath>
             </File>
-            <File>
-              <FileName>systick.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\systick.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -726,6 +721,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\hardware\TIMER\Timer.c</FilePath>
             </File>
+            <File>
+              <FileName>MyMath.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\hardware\MATH\MyMath.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -740,6 +740,21 @@
               <FileName>FOCdriver.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\SYSTEM\FOCdriver\FOCdriver.c</FilePath>
+            </File>
+            <File>
+              <FileName>flash_para.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\SYSTEM\flash_para\flash_para.c</FilePath>
+            </File>
+            <File>
+              <FileName>FOCcontrol.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\SYSTEM\FOCInterface\FOCcontrol.c</FilePath>
+            </File>
+            <File>
+              <FileName>systick.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\SYSTEM\sysTick\systick.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1164,11 +1179,6 @@
               <FileType>1</FileType>
               <FilePath>..\main.c</FilePath>
             </File>
-            <File>
-              <FileName>systick.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\systick.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -1463,6 +1473,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\hardware\TIMER\Timer.c</FilePath>
             </File>
+            <File>
+              <FileName>MyMath.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\hardware\MATH\MyMath.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1477,6 +1492,21 @@
               <FileName>FOCdriver.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\SYSTEM\FOCdriver\FOCdriver.c</FilePath>
+            </File>
+            <File>
+              <FileName>flash_para.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\SYSTEM\flash_para\flash_para.c</FilePath>
+            </File>
+            <File>
+              <FileName>FOCcontrol.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\SYSTEM\FOCInterface\FOCcontrol.c</FilePath>
+            </File>
+            <File>
+              <FileName>systick.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\SYSTEM\sysTick\systick.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1524,7 +1554,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>.\output\</OutputDirectory>
-          <OutputName>GD303_GImblae</OutputName>
+          <OutputName>GD303_Gimble</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
@@ -1849,7 +1879,7 @@
               <MiscControls>--gnu</MiscControls>
               <Define>USE_STDPERIPH_DRIVER,GD32F30X_HD</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Firmware\CMSIS;..\..\Firmware\CMSIS\GD\GD32F30x\Include;..\..\Firmware\GD32F30x_standard_peripheral\Include;..\..\Utilities;..\;..\..\hardware;..\..\hardware\ADC_DMA;..\..\hardware\GPIO;..\..\hardware\I2C;..\..\hardware\MATH;..\..\hardware\PWMout;..\..\hardware\PWM_PPM_capture;..\..\hardware\SPI;..\..\hardware\TIMER;..\..\hardware\UART_DMA;..\..\SYSTEM\FOCdriver;..\..\SYSTEM\TLE5012B</IncludePath>
+              <IncludePath>..\..\Firmware\CMSIS;..\..\Firmware\CMSIS\GD\GD32F30x\Include;..\..\Firmware\GD32F30x_standard_peripheral\Include;..\..\Utilities;..\;..\..\hardware;..\..\hardware\ADC_DMA;..\..\hardware\GPIO;..\..\hardware\I2C;..\..\hardware\MATH;..\..\hardware\PWMout;..\..\hardware\PWM_PPM_capture;..\..\hardware\SPI;..\..\hardware\TIMER;..\..\hardware\UART_DMA;..\..\SYSTEM\FOCdriver;..\..\SYSTEM\TLE5012B;..\..\SYSTEM\flash_para;..\..\hardware\MATH;..\..\SYSTEM\FOCInterface;..\..\SYSTEM\sysTick</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1901,11 +1931,6 @@
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\main.c</FilePath>
-            </File>
-            <File>
-              <FileName>systick.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\systick.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2201,6 +2226,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\hardware\TIMER\Timer.c</FilePath>
             </File>
+            <File>
+              <FileName>MyMath.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\hardware\MATH\MyMath.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -2215,6 +2245,21 @@
               <FileName>FOCdriver.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\SYSTEM\FOCdriver\FOCdriver.c</FilePath>
+            </File>
+            <File>
+              <FileName>flash_para.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\SYSTEM\flash_para\flash_para.c</FilePath>
+            </File>
+            <File>
+              <FileName>FOCcontrol.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\SYSTEM\FOCInterface\FOCcontrol.c</FilePath>
+            </File>
+            <File>
+              <FileName>systick.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\SYSTEM\sysTick\systick.c</FilePath>
             </File>
           </Files>
         </Group>

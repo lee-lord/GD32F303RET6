@@ -56,10 +56,10 @@ volatile U32 systemTickMs;
 // //  SysTick_Config(RCC_Clocks.SYSCLK_Frequency / PreCLK);
 // }
 /// 1ms 
-void systick_config(void)
+void systick_config(U32 FrqHz)
 {
     /* setup systick timer for 1000Hz interrupts */
-    if (SysTick_Config(SystemCoreClock / 1000U)){
+    if (SysTick_Config(SystemCoreClock / FrqHz)){
         /* capture error */
         while (1){
         }
@@ -93,6 +93,25 @@ void delay_1ms(U32 count)
             while(systemTickMs != delay){} 
        }
     
+}
+
+
+void delay_us(U32 us)
+{
+  U32 startTimeus=micros();
+  U32 deltaTime=0,tmp=0;
+  while(deltaTime>us)
+  {
+     tmp =micros();
+    if(tmp>startTimeus)
+      {
+            deltaTime = tmp-startTimeus;
+      }
+      else
+      {
+           deltaTime = 0xffffffff-startTimeus+tmp;
+      }
+  }
 }
 
   void Update_SystemTick(){

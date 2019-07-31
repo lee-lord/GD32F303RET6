@@ -46,24 +46,38 @@ OF SUCH DAMAGE.
 
 #include "gd32f30x.h"
 #include "systick.h"
+#include "sysType.h"
 #include <stdio.h>
 #include "main.h"
 #include "gd32f303e_eval.h"
 #include "ADC_DMA.h"
 
-#define BOARD_ADC_CHANNEL   ADC_CHANNEL_13
+#define BOARD_ADC_CHANNEL   ADC_CHANNEL_10
 #define ADC_GPIO_PORT_RCU   RCU_GPIOC
 #define ADC_GPIO_PORT       GPIOC
-#define ADC_GPIO_PIN        GPIO_PIN_3
-uint16_t adc_value;
+#define ADC_GPIO_PIN        GPIO_PIN_0
+#define adcBufLen 32
+volatile U16 adc_value;
+volatile U16 adc_Filter_buf[adcBufLen];
+
 /*!
     \brief      configure the DMA peripheral
     \param[in]  none
     \param[out] none
     \retval     none
 */
-void dma_config_forADC0(void)
+void adc_dma_config(void)
 {
+    /* enable GPIOA clock */
+    rcu_periph_clock_enable(ADC_GPIO_PORT_RCU);
+    /* enable ADC clock */
+    rcu_periph_clock_enable(RCU_ADC0);
+    /* enable DMA0 clock */
+    rcu_periph_clock_enable(RCU_DMA0);  
+    /* config ADC clock */
+    rcu_adc_clock_config(RCU_CKADC_CKAPB2_DIV4);
+        /* config the GPIO as analog mode */
+    gpio_init(ADC_GPIO_PORT, GPIO_MODE_AIN, GPIO_OSPEED_MAX, ADC_GPIO_PIN);
     /* ADC_DMA_channel configuration */
     dma_parameter_struct dma_data_parameter;
     
@@ -73,45 +87,25 @@ void dma_config_forADC0(void)
     /* initialize DMA single data mode */
     dma_data_parameter.periph_addr = (uint32_t)(&ADC_RDATA(ADC0));
     dma_data_parameter.periph_inc = DMA_PERIPH_INCREASE_DISABLE;
-    dma_data_parameter.memory_addr = (uint32_t)(&adc_value);
-    dma_data_parameter.memory_inc = DMA_MEMORY_INCREASE_DISABLE;
+    dma_data_parameter.memory_addr = (uint32_t)(adc_Filter_buf);
+    dma_data_parameter.memory_inc = DMA_MEMORY_INCREASE_ENABLE;
     dma_data_parameter.periph_width = DMA_PERIPHERAL_WIDTH_16BIT;
     dma_data_parameter.memory_width = DMA_MEMORY_WIDTH_16BIT;  
     dma_data_parameter.direction = DMA_PERIPHERAL_TO_MEMORY;
-    dma_data_parameter.number = 1;
+    dma_data_parameter.number = adcBufLen;
     dma_data_parameter.priority = DMA_PRIORITY_HIGH;
     dma_init(DMA0, DMA_CH0, &dma_data_parameter);
 
-    dma_circulation_enable(DMA0, DMA_CH0);
-  
+    dma_circulation_enable(DMA0, DMA_CH0);//address circle
+    dma_memory_to_memory_disable(DMA0, DMA_CH0); 
+
+
     /* enable DMA channel */
     dma_channel_enable(DMA0, DMA_CH0);
-}
+    /*enable the interrupt of DMA whenFTF finished */
+    dma_interrupt_enable(DMA0,DMA_CH0,DMA_INT_FTF);
 
-/*!
-    \brief      configure the ADC peripheral
-    \param[in]  none
-    \param[out] none
-    \retval     none
-*/
-void adc_DMA_config(void)
-{   ///////////////////////////////RCU initialise 
-    /* enable GPIOA clock */
-    rcu_periph_clock_enable(ADC_GPIO_PORT_RCU);
-    /* enable ADC clock */
-    rcu_periph_clock_enable(RCU_ADC0);
-    /* enable DMA0 clock */
-    rcu_periph_clock_enable(RCU_DMA0);  
-    /* config ADC clock */
-    rcu_adc_clock_config(RCU_CKADC_CKAPB2_DIV4);
-
-	/* config the GPIO as analog mode */
-    gpio_init(ADC_GPIO_PORT, GPIO_MODE_AIN, GPIO_OSPEED_MAX, ADC_GPIO_PIN);
-//////////////////////////////dma configure for ADC0////////////////////////////////////////////////////
-    dma_config_forADC0();
-
-//////////////////////////////////////////////////////////////////////////////////
-    /* ADC continuous function enable */
+        /* ADC continuous function enable */
     adc_special_function_config(ADC0, ADC_CONTINUOUS_MODE, ENABLE);
     adc_special_function_config(ADC0, ADC_SCAN_MODE, DISABLE);    
     /* ADC trigger config */
@@ -140,3 +134,15 @@ void adc_DMA_config(void)
     adc_software_trigger_enable(ADC0, ADC_REGULAR_CHANNEL);
 }
 
+
+void DMA0_Channel0_IRQHandler(void)
+{//static U32 lastTime=0;
+if(dma_interrupt_flag_get(DMA0, DMA_CH0, DMA_INT_FLAG_FTF)){     
+        dma_interrupt_flag_clear(DMA0, DMA_CH0, DMA_INT_FLAG_FTF);
+        for(U16 i=0;i<adcBufLen;i++)
+            adc_value+=adc_Filter_buf[i];
+        adc_value /=adcBufLen;
+        // adc_value = micros()-lastTime;
+        // lastTime = micros();
+    }
+}

@@ -1,11 +1,12 @@
 #include "gd32f30x.h"
+#include "systick.h"
 #include "sysType.h"
 #include "PWM_PPM_capture.h"
 volatile uint16_t PWM1Value = 0, PWM2Value = 0;
 
 void PWM_PPM_inInitial(void)
 {
-   timer_captur_configuration();// pwm in capture PC6 PC8 as PWM input pin
+   timer_captur_configuration(1000000);// @1Mhz  full counter pwm in capture PC6 PC8 as PWM input pin
    // PPM in cature
 }
 
@@ -15,7 +16,7 @@ void PWM_PPM_inInitial(void)
     \param[out] none
     \retval     none
   */
-void timer_captur_configuration(void)
+void timer_captur_configuration(U32 FrqHz)
 {
     /* TIMER7 configuration: input capture mode -------------------
     the external signal is connected to TIMER7 CH0 pin (PB4)
@@ -24,22 +25,23 @@ void timer_captur_configuration(void)
     ------------------------------------------------------------ */
     timer_ic_parameter_struct timer_icinitpara;
     timer_parameter_struct timer_initpara;
-    
+    U16 prescaler,overflow;
 
     rcu_periph_clock_enable(RCU_GPIOC);
     rcu_periph_clock_enable(RCU_AF);
     rcu_periph_clock_enable(RCU_TIMER7);
 
-    /*configure PA6 PB8 (TIMER7 CH0 ch2) as alternate function*/
-    gpio_init(GPIOC,GPIO_MODE_IN_FLOATING,GPIO_OSPEED_50MHZ,GPIO_PIN_6|GPIO_PIN_8);
+    /*configure PA6 PB8 (TIMER7 CH0 ch2) as alternate function   GPIO_MODE_IN_FLOATING*/
+    gpio_init(GPIOC,GPIO_MODE_IPU,GPIO_OSPEED_50MHZ,GPIO_PIN_6|GPIO_PIN_8);
 
     timer_deinit(TIMER7);
+    TimerxPrescalerOverflowCal(FrqHz,TIMER7,&prescaler,&overflow);
 
     /* TIMER7 configuration */
-    timer_initpara.prescaler         = 119;//1Mhz counter @1us
+    timer_initpara.prescaler         = prescaler-1;//1Mhz counter @1us
     timer_initpara.alignedmode       = TIMER_COUNTER_EDGE;
     timer_initpara.counterdirection  = TIMER_COUNTER_UP;
-    timer_initpara.period            = 65535;//full duty 65.535ms
+    timer_initpara.period            = overflow-1;//full duty 65.535ms
     timer_initpara.clockdivision     = TIMER_CKDIV_DIV1;
     timer_initpara.repetitioncounter = 0;
     timer_init(TIMER7,&timer_initpara);
@@ -107,7 +109,7 @@ void TIMER7_Channel_IRQHandler(void)
     U16 tmpCunt=0;
     if(SET == timer_interrupt_flag_get(TIMER7,TIMER_INT_FLAG_CH0)){
         /* clear channel 0 interrupt bit */
-        tmpCunt = TIMER_CH0CV(TIMER7);
+        tmpCunt = TIMER_CH0CV(TIMER7);//micros();//
         timer_interrupt_flag_clear(TIMER7,TIMER_INT_FLAG_CH0);        
         if(capflag1==0)
         {
@@ -128,7 +130,7 @@ void TIMER7_Channel_IRQHandler(void)
     
     if(SET == timer_interrupt_flag_get(TIMER7,TIMER_INT_FLAG_CH2)){
         /* clear channel 0 interrupt bit */
-        tmpCunt = TIMER_CH2CV(TIMER7);// 
+        tmpCunt = TIMER_CH2CV(TIMER7);// micros();//
         timer_interrupt_flag_clear(TIMER7,TIMER_INT_FLAG_CH2);
         if(capflag2==0)
         {

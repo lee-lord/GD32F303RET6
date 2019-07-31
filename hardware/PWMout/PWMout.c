@@ -71,39 +71,69 @@
 
 
 */
+void TimerxPrescalerOverflowCal(U32 FrqHz,U32 Timerx,U16 *prescaler,U16* overflow )
+{
+    U32  cyclesPerMicros=0;
+    if(Timerx==TIMER0||Timerx==TIMER7||Timerx==TIMER8||Timerx==TIMER9||Timerx==TIMER10)
+       cyclesPerMicros=120;
+     else
+       cyclesPerMicros=120;
+    U32 microseconds = 1000000 / FrqHz; // per period =1000000/500=2000 us
+    U32 period_cyc = microseconds * cyclesPerMicros;//CYCLES_PER_MICROSECOND; //=2000*120=240000 system clock cycles per period
+    // This picks the smallest prescaler that allows an overflow < 2^16.
+     *prescaler = (U16)(period_cyc / MAX_OVERFLOW + 1);//240000/65535+1=3.6+1=
+     *overflow = (U16)(period_cyc / (*prescaler));// (prescaler+1)
+}
 
 ////MotorA PA0 PA1 PA2 TIMER1
 ////motorB PB6 PB7 PB8 TIMER3
 ////motorC PA6 PA7 PB0 TIMER2
-void synchronTim123(U16 arr,U16 psc)
+U16 synchronTim123(U32 FrqHz)
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////
 	timer_oc_parameter_struct timer_ocintpara;
     timer_parameter_struct timer_initpara;
-            
+    //////////////////////////////////////
+    U16 prescaler=0,overflow=0;
+
+  ///////////////////////////////////////////////////////////
     rcu_periph_clock_enable(RCU_TIMER1);
     rcu_periph_clock_enable(RCU_TIMER2);
     rcu_periph_clock_enable(RCU_TIMER3);
 
     rcu_periph_clock_enable(RCU_GPIOA);
     rcu_periph_clock_enable(RCU_GPIOB);
+    rcu_periph_clock_enable(RCU_GPIOC);
     rcu_periph_clock_enable(RCU_AF);
-
+    gpio_init(GPIOC,GPIO_MODE_OUT_PP,GPIO_OSPEED_50MHZ,GPIO_PIN_9|GPIO_PIN_14|GPIO_PIN_10);//P9 ->MotorA_en P14 ->MortorB_en
+    PORT_PIN_SET(GPIOC,GPIO_PIN_10);
+    PORT_PIN_SET(GPIOC,GPIO_PIN_14);
+    //////enable the MP6536A and MP6536B
     gpio_init(GPIOB,GPIO_MODE_AF_PP,GPIO_OSPEED_50MHZ,GPIO_PIN_8|GPIO_PIN_7|GPIO_PIN_6|GPIO_PIN_0);
     gpio_init(GPIOA,GPIO_MODE_AF_PP,GPIO_OSPEED_50MHZ,GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_0|GPIO_PIN_6|GPIO_PIN_7);	
 //////////////////////////////////////////////
     timer_deinit(TIMER1);
     timer_deinit(TIMER2);
 	timer_deinit(TIMER3);
+    TimerxPrescalerOverflowCal(FrqHz,TIMER1,&prescaler,&overflow);
     /* TIMER1,3,4 configuration */
-    timer_initpara.prescaler         = 0;
+    timer_initpara.prescaler         = prescaler-1;
     timer_initpara.alignedmode       = TIMER_COUNTER_CENTER_DOWN;
     timer_initpara.counterdirection  = TIMER_COUNTER_UP;
-    timer_initpara.period            = arr;
+    timer_initpara.period            = overflow-1;
     timer_initpara.clockdivision     = TIMER_CKDIV_DIV1;
     timer_initpara.repetitioncounter = 0;
+
     timer_init(TIMER1,&timer_initpara);
+    /////////////////////////////////////////////////////
+    TimerxPrescalerOverflowCal(FrqHz,TIMER2,&prescaler,&overflow);
+    timer_initpara.prescaler         = prescaler-1;
+    timer_initpara.period            = overflow-1;
     timer_init(TIMER2,&timer_initpara);
+//////////////////////////////////////////////
+    TimerxPrescalerOverflowCal(FrqHz,TIMER3,&prescaler,&overflow);
+    timer_initpara.prescaler         = prescaler-1;
+    timer_initpara.period            = overflow-1;
     timer_init(TIMER3,&timer_initpara);
 //////////////////////////////////////
       /* CH0,CH1 and CH2 configuration in PWM mode */
@@ -196,15 +226,14 @@ void synchronTim123(U16 arr,U16 psc)
     timer_enable(TIMER1);
     timer_enable(TIMER2);
     timer_enable(TIMER3);
-
-
+     return overflow;
 }
 
 
 
 void PWMoutInitial(void)
 {
-    synchronTim123(3000,120);
+    synchronTim123(30000);
 }
 
 

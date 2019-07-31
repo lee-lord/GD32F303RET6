@@ -8,9 +8,9 @@
 #define USART1_DATA_ADDRESS    ((uint32_t)0x40004404)
 #define USART2_DATA_ADDRESS    ((uint32_t)0x40004804)
 
-typedef struct {
-U16 Txfile_head;
-U16 Txfile_tail;
+typedef __packed struct {
+U16 Txfile_pullout;
+U16 Txfile_pushin;
 U16 Rxfile_head;
 U16 Rxfile_tail;
 U8 *RxBuff;//[TxBufLen];
@@ -74,5 +74,7 @@ __inline  void UartC_write(U8 * data,U16 len);
  
 void UCprintf(const U8 *fmt, ...);
 void UAprintf(const U8 *fmt, ...);
+
+void ANO_DT_Send_Status(uint8_t UartX,float angle_rol, float angle_pit, float angle_yaw, int32_t alt, uint8_t fly_model, uint8_t armed);
 #endif
 

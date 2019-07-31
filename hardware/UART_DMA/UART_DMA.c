@@ -17,16 +17,16 @@ U8 Com2TX[TxBufLen];
 
 void DMAbufInit(void)
 {
-   Uart1DMAbuf.Txfile_head=0;
-	 Uart1DMAbuf.Txfile_tail=0;
+   Uart1DMAbuf.Txfile_pullout=0;
+	 Uart1DMAbuf.Txfile_pushin=0;
    Uart1DMAbuf.Rxfile_head=0;
 	 Uart1DMAbuf.Rxfile_tail=0;	
 	Uart1DMAbuf.RxBuff=Com1RX;
 	Uart1DMAbuf.TxBuff=Com1TX;
 	 Uart1DMAbuf.busy=0;
 	
-   Uart2DMAbuf.Txfile_head=0;
-	 Uart2DMAbuf.Txfile_tail=0;
+   Uart2DMAbuf.Txfile_pullout=0;
+	 Uart2DMAbuf.Txfile_pushin=0;
    Uart2DMAbuf.Rxfile_head=0;
 	 Uart2DMAbuf.Rxfile_tail=0;
    Uart2DMAbuf.RxBuff=Com2RX;
@@ -108,9 +108,10 @@ void UartC_DmaInitial(U32 UartX)//U32 DMA_X,dma_channel_enum channelRx,dma_chann
     //DMAstruc->DMA_Mode = DMA_Mode_Normal;//DMA_Mode_Circular;//x拥有中优先级
     dma_memory_to_memory_disable(DMA0, DMA_CH1); //DMA通道x没有设置为内存到内存传输
     ///DMAstruc->DMA_M2M = DMA_M2M_Disable;  
-    /* enable DMA channel1 */
-    dma_channel_enable(DMA0, DMA_CH1);
-
+    /* enable DMA channel1  will start TX data*/
+    //dma_channel_enable(DMA0, DMA_CH1);
+    
+    dma_interrupt_flag_clear(DMA0, DMA_CH1, DMA_INT_FLAG_FTF);
     /////here we intial the interupt of DMA 
    // DMA_ITConfig(DMA1_Channel4,DMA_IT_TC,ENABLE);
     dma_interrupt_enable(DMA0,DMA_CH1,DMA_INT_FTF);
@@ -119,7 +120,7 @@ void UartC_DmaInitial(U32 UartX)//U32 DMA_X,dma_channel_enum channelRx,dma_chann
     usart_dma_transmit_config(USART2, USART_DENT_ENABLE);   
 
     // nvic_priority_group_set(NVIC_PRIGROUP_PRE1_SUB3);
-    // nvic_irq_enable(DMA0_Channel1_IRQn, 1, 4);
+     nvic_irq_enable(DMA0_Channel1_IRQn, 1, 4);
 }
 
 
@@ -158,15 +159,17 @@ void UartA_DmaInitial(U32 UartX)//U32 DMA_X,dma_channel_enum channelRx,dma_chann
     //DMAstruc->DMA_Mode = DMA_Mode_Normal;//DMA_Mode_Circular;//x拥有中优先级
     dma_memory_to_memory_disable(DMA0, DMA_CH3); //DMA通道x没有设置为内存到内存传输
     ///DMAstruc->DMA_M2M = DMA_M2M_Disable;  
-        /* enable DMA channel3 */
-    dma_channel_enable(DMA0, DMA_CH3);
+        /* enable DMA channel3 will start to send data by TX pin*/
+    ///dma_channel_enable(DMA0, DMA_CH3);
+     dma_interrupt_flag_clear(DMA0, DMA_CH3, DMA_INT_FLAG_FTF);
+
     /* USART DMA enable for transmission and reception */
     usart_dma_transmit_config(USART0, USART_DENT_ENABLE); 	
 	
     /////here we intial the interupt of DMA 
    // DMA_ITConfig(DMA1_Channel4,DMA_IT_TC,ENABLE);
     dma_interrupt_enable(DMA0,DMA_CH3,DMA_INT_FTF);
-
+    
 /////////initial DMA RX DMA mode
 	dma_deinit(DMA0, DMA_CH4);   //将DMA的通道1寄存器重设为缺省值
     dma_init_struct.direction = DMA_PERIPHERAL_TO_MEMORY;//外设作为数据传输的目的地
@@ -201,7 +204,7 @@ void UartA_DmaInitial(U32 UartX)//U32 DMA_X,dma_channel_enum channelRx,dma_chann
 
       /////here we intial the interupt of DMA 
     // nvic_priority_group_set(NVIC_PRIGROUP_PRE1_SUB3);
-    // nvic_irq_enable(DMA0_Channel3_IRQn, 1, 3);
+     nvic_irq_enable(DMA0_Channel3_IRQn, 1, 3);
 }
 
 
@@ -249,7 +252,7 @@ __inline  void DMA_SendEn(uint32_t DMA_X,dma_channel_enum channelx,dma_parameter
 { 
   dma_channel_disable(DMA_X, channelx );  //关闭USART1 TX DMA1 所指示的通道   4   
     DMA_Tx_InitStruc->number     =   dataLen;
-  DMA_Tx_InitStruc->memory_addr = dataAdd;  //DMA内存基地址
+    DMA_Tx_InitStruc->memory_addr = dataAdd;  //DMA内存基地址
   dma_init(DMA_X, channelx, DMA_Tx_InitStruc);
   //DMA_ITConfig(DMA_CHx,DMA_IT_TC,ENABLE);
   dma_channel_enable(DMA_X, channelx);  //使能USART1 TX DMA1 所指示的通道 
@@ -262,25 +265,20 @@ U32 SramAdd=0;
 U32 tempLen=0;
 if(dma_interrupt_flag_get(DMA0, DMA_CH3, DMA_INT_FLAG_FTF)){     
         dma_interrupt_flag_clear(DMA0, DMA_CH3, DMA_INT_FLAG_FTF);   
-    SramAdd = (U32)(&Uart1DMAbuf.TxBuff[Uart1DMAbuf.Txfile_head]);
+    SramAdd = (U32)(&Uart1DMAbuf.TxBuff[Uart1DMAbuf.Txfile_pullout]);
       ///正常情况的发送，天冲在前，发送在后。
-       if(Uart1DMAbuf.Txfile_head<Uart1DMAbuf.Txfile_tail)
+       if(Uart1DMAbuf.Txfile_pullout<Uart1DMAbuf.Txfile_pushin)
        {
-         tempLen = Uart1DMAbuf.Txfile_tail -Uart1DMAbuf.Txfile_head;
-           Uart1DMAbuf.Txfile_head =Uart1DMAbuf.Txfile_tail;
+         tempLen = Uart1DMAbuf.Txfile_pushin -Uart1DMAbuf.Txfile_pullout;
+           Uart1DMAbuf.Txfile_pullout =Uart1DMAbuf.Txfile_pushin;
        }// 队列颠倒，填充在后，发送在前，先把队列的尾部发送完成。发送头归零。等下一次发送。
-       else if(Uart1DMAbuf.Txfile_head>Uart1DMAbuf.Txfile_tail)
+       else if(Uart1DMAbuf.Txfile_pullout>Uart1DMAbuf.Txfile_pushin)
        {  //发送到buf的尾端
-         // SramAdd = (U32)(&Uart1DMAbuf.TxBuff[Uart1DMAbuf.Txfile_head]);
-          tempLen = TxBufLen -Uart1DMAbuf.Txfile_head;
-          Uart1DMAbuf.Txfile_head =0; //LED1=!LED1;
-       }else if(Uart1DMAbuf.Txfile_head==Uart1DMAbuf.Txfile_tail)
-       {
-         Uart1DMAbuf.busy=0;// LED0=!LED0;
-          return;
+         // SramAdd = (U32)(&Uart1DMAbuf.TxBuff[Uart1DMAbuf.Txfile_pullout]);
+          tempLen = TxBufLen -Uart1DMAbuf.Txfile_pullout;
+          Uart1DMAbuf.Txfile_pullout =0; //LED1=!LED1;
        }
-//      if(Uart1DMAbuf.Txfile_head==TxBufLen-1)
-//        LED0=!LED0;
+
     if(tempLen>0)
     {  
     Uart1DMAbuf.busy=1;  
@@ -300,18 +298,18 @@ if(dma_interrupt_flag_get(DMA0, DMA_CH3, DMA_INT_FLAG_FTF)){
 if(dma_interrupt_flag_get(DMA0, DMA_CH1, DMA_INT_FLAG_FTF)){     
         dma_interrupt_flag_clear(DMA0, DMA_CH1, DMA_INT_FLAG_FTF);
     ///正常情况的发送，天冲在前，发送在后。
-    SramAdd = (U32)(&Uart2DMAbuf.TxBuff[Uart2DMAbuf.Txfile_head]);  
-       if(Uart2DMAbuf.Txfile_head<Uart2DMAbuf.Txfile_tail)
+    SramAdd = (U32)(&Uart2DMAbuf.TxBuff[Uart2DMAbuf.Txfile_pullout]);  
+       if(Uart2DMAbuf.Txfile_pullout<Uart2DMAbuf.Txfile_pushin)
        {
-         tempLen = Uart2DMAbuf.Txfile_tail -Uart2DMAbuf.Txfile_head;
-           Uart2DMAbuf.Txfile_head =Uart2DMAbuf.Txfile_tail;
+         tempLen = Uart2DMAbuf.Txfile_pushin -Uart2DMAbuf.Txfile_pullout;
+           Uart2DMAbuf.Txfile_pullout =Uart2DMAbuf.Txfile_pushin;
         // LED0=!LED0;
        }// 队列颠倒，填充在后，发送在前，先把队列的尾部发送完成。发送头归零。等下一次发送。
-       else if(Uart2DMAbuf.Txfile_head>Uart2DMAbuf.Txfile_tail)
+       else if(Uart2DMAbuf.Txfile_pullout>Uart2DMAbuf.Txfile_pushin)
        {  //发送到buf的尾端
-  //        SramAdd = (U32)(&Uart2DMAbuf.TxBuff[Uart2DMAbuf.Txfile_head]);
-          tempLen = TxBufLen -Uart2DMAbuf.Txfile_head;
-                 Uart2DMAbuf.Txfile_head =0;
+  //        SramAdd = (U32)(&Uart2DMAbuf.TxBuff[Uart2DMAbuf.Txfile_pullout]);
+          tempLen = TxBufLen -Uart2DMAbuf.Txfile_pullout;
+          Uart2DMAbuf.Txfile_pullout =0;
         // LED1=!LED1;
        }
      //if(tempLen==1)  LED1=!LED1;
@@ -387,36 +385,35 @@ if(dma_interrupt_flag_get(DMA0, DMA_CH1, DMA_INT_FLAG_FTF)){
    U32 SramAdd=0;
      for(i=0;i<len;i++)
          {
-       Uart1DMAbuf.TxBuff[Uart1DMAbuf.Txfile_tail++]=*(pStr+i);
-       if(Uart1DMAbuf.Txfile_tail>(TxBufLen-1)){ Uart1DMAbuf.Txfile_tail=0; 
-                                             //LED0=!LED0;
-                         }
-     }
+          Uart1DMAbuf.TxBuff[Uart1DMAbuf.Txfile_pushin]=*(pStr+i);
+					  Uart1DMAbuf.Txfile_pushin = Uart1DMAbuf.Txfile_pushin +1;
+          if(Uart1DMAbuf.Txfile_pushin==TxBufLen){ Uart1DMAbuf.Txfile_pushin=0; }
+          /////here will block to send all data.
+					if(Uart1DMAbuf.Txfile_pushin==Uart1DMAbuf.Txfile_pullout)//here overflow now 
+					   {
+               Uart1DMAbuf.state +=1;
+             }  
+          }
 
     if(Uart1DMAbuf.busy==0) // is idle
     {
-      //printf("\n\nBusy=0 send:\n");
-        SramAdd = (U32)(&Uart1DMAbuf.TxBuff[Uart1DMAbuf.Txfile_head]);
+        SramAdd = (U32)(&Uart1DMAbuf.TxBuff[Uart1DMAbuf.Txfile_pullout]);
       ///正常情况的发送，天冲在前，发送在后。
-       if(Uart1DMAbuf.Txfile_head<Uart1DMAbuf.Txfile_tail)
+       if(Uart1DMAbuf.Txfile_pullout<Uart1DMAbuf.Txfile_pushin)
        {
-         tempLen = Uart1DMAbuf.Txfile_tail -Uart1DMAbuf.Txfile_head;
-         Uart1DMAbuf.Txfile_head =Uart1DMAbuf.Txfile_tail;
+         tempLen = Uart1DMAbuf.Txfile_pushin -Uart1DMAbuf.Txfile_pullout;
+         Uart1DMAbuf.Txfile_pullout =Uart1DMAbuf.Txfile_pushin;
        }// 队列颠倒，填充在后，发送在前，先把队列的尾部发送完成。发送头归零。等下一次发送。
-       else  if(Uart1DMAbuf.Txfile_head>Uart1DMAbuf.Txfile_tail)
+       else  if(Uart1DMAbuf.Txfile_pullout>Uart1DMAbuf.Txfile_pushin)
        {  //发送到buf的尾端
-         // SramAdd = (U32)(&Uart1DMAbuf.TxBuff[Uart1DMAbuf.Txfile_head]);
-          tempLen = TxBufLen -Uart1DMAbuf.Txfile_head;
-         // tempLen = TxBufLen -Uart1DMAbuf.Txfile_head; 
-          Uart1DMAbuf.Txfile_head =0;
-         //LED1=!LED1;
+          tempLen = TxBufLen -Uart1DMAbuf.Txfile_pullout;
+          Uart1DMAbuf.Txfile_pullout =0;
        }
        if(tempLen)
        {
         Uart1DMAbuf.busy=1;
          DMA_SendEn(DMA0, DMA_CH3,(dma_parameter_struct *)&DMA_CH1_Tx_InitStruc,tempLen,SramAdd);
-       }else
-         Uart1DMAbuf.busy=0;
+       }
     }
 }
 
@@ -437,25 +434,30 @@ if(dma_interrupt_flag_get(DMA0, DMA_CH1, DMA_INT_FLAG_FTF)){
    U32 SramAdd=0;
     for(i=0;i<len;i++)
          {
-       Uart2DMAbuf.TxBuff[Uart2DMAbuf.Txfile_tail++]=*(pStr+i);
-       if(Uart2DMAbuf.Txfile_tail>(TxBufLen-1)){ Uart2DMAbuf.Txfile_tail=0;}
+       Uart2DMAbuf.TxBuff[Uart2DMAbuf.Txfile_pushin]=*(pStr+i);
+        Uart2DMAbuf.Txfile_pushin +=1;
+       if(Uart2DMAbuf.Txfile_pushin>(TxBufLen-1)){ Uart2DMAbuf.Txfile_pushin=0;}
+        if(Uart2DMAbuf.Txfile_pushin==Uart2DMAbuf.Txfile_pullout)//here overflow now 
+             {
+               Uart2DMAbuf.state +=1;
+             }  
      }
 
     if(Uart2DMAbuf.busy==0) // is idle
     {
-        SramAdd = (U32)(&Uart2DMAbuf.TxBuff[Uart2DMAbuf.Txfile_head]);
+        SramAdd = (U32)(&Uart2DMAbuf.TxBuff[Uart2DMAbuf.Txfile_pullout]);
       ///正常情况的发送，天冲在前，发送在后。
-       if(Uart2DMAbuf.Txfile_head<Uart2DMAbuf.Txfile_tail)
+       if(Uart2DMAbuf.Txfile_pullout<Uart2DMAbuf.Txfile_pushin)
        {
-         tempLen = Uart2DMAbuf.Txfile_tail -Uart2DMAbuf.Txfile_head;
-         Uart2DMAbuf.Txfile_head =Uart2DMAbuf.Txfile_tail;
+         tempLen = Uart2DMAbuf.Txfile_pushin -Uart2DMAbuf.Txfile_pullout;
+         Uart2DMAbuf.Txfile_pullout =Uart2DMAbuf.Txfile_pushin;
          //LED1=!LED1;
        }// 队列颠倒，填充在后，发送在前，先把队列的尾部发送完成。发送头归零。等下一次发送。
-       else if(Uart2DMAbuf.Txfile_head>Uart2DMAbuf.Txfile_tail)
+       else if(Uart2DMAbuf.Txfile_pullout>Uart2DMAbuf.Txfile_pushin)
        {  //发送到buf的尾端
-         // SramAdd = (U32)(&Uart2DMAbuf.TxBuff[Uart2DMAbuf.Txfile_head]);
-          tempLen = TxBufLen -Uart2DMAbuf.Txfile_head;
-          Uart2DMAbuf.Txfile_head =0;  
+         // SramAdd = (U32)(&Uart2DMAbuf.TxBuff[Uart2DMAbuf.Txfile_pullout]);
+          tempLen = TxBufLen -Uart2DMAbuf.Txfile_pullout;
+          Uart2DMAbuf.Txfile_pullout =0;  
        }
        if(tempLen)
        {
@@ -463,10 +465,56 @@ if(dma_interrupt_flag_get(DMA0, DMA_CH1, DMA_INT_FLAG_FTF)){
          //DMA_SendEn(DMA1_Channel7,&DMA_CH2_Tx_InitStruc,tempLen,SramAdd);
          DMA_SendEn(DMA0, DMA_CH1,(dma_parameter_struct *)&DMA_CH2_Tx_InitStruc,tempLen,SramAdd);
        }
-       else
-        Uart2DMAbuf.busy=0; 
+//       else
+//        Uart2DMAbuf.busy=0; 
     }
 }
+
+
+
+void ANO_DT_Send_Status(uint8_t UartX,float angle_rol, float angle_pit, float angle_yaw, int32_t alt, uint8_t fly_model, uint8_t armed)
+{
+    uint8_t _cnt=0;
+    int32_t _temp;
+    int32_t _temp2 = alt;
+    uint8_t data_to_send[32];
+    data_to_send[_cnt++]=0xAA;
+    data_to_send[_cnt++]=0xAA;
+    data_to_send[_cnt++]=0x01;
+    data_to_send[_cnt++]=0;
+    
+    _temp = (int32_t)(angle_rol*100);
+    data_to_send[_cnt++]= (_temp)>>8;
+    data_to_send[_cnt++]= (_temp);
+    _temp = (int32_t)(angle_pit*100);
+    data_to_send[_cnt++]= (_temp)>>8;
+    data_to_send[_cnt++]= (_temp);
+    _temp = (int32_t)(angle_yaw*100);
+    data_to_send[_cnt++]= (_temp)>>8;
+    data_to_send[_cnt++]= (_temp);
+    
+    data_to_send[_cnt++]= (_temp2)>>24;
+    data_to_send[_cnt++]= (_temp2)>>16;
+    data_to_send[_cnt++]= (_temp2)>>8;
+    data_to_send[_cnt++]= (_temp2);
+    
+    data_to_send[_cnt++] = fly_model;
+    
+    data_to_send[_cnt++] = armed;
+    
+    data_to_send[3] = _cnt-4;
+    
+    uint8_t sum = 0;
+    for(uint8_t i=0;i<_cnt;i++)
+        sum += data_to_send[i];
+    data_to_send[_cnt++]=sum;
+    if(UartX==0)
+    UartA_write(data_to_send, _cnt);
+    else
+    UartC_write(data_to_send, _cnt);
+}
+
+
 
 
 
@@ -774,6 +822,13 @@ void print_vprintf (U8 UartX,const U8 *fmt, va_list ap)
         unsigned char prec;
         unsigned char buf[13];
         unsigned char _buffer[256];
+                        int exp;                /* exponent of master decimal digit     */
+                        int n;
+                        unsigned char vtype;    /* result of float value parse  */
+                        unsigned char sign;     /* sign character (or 0)        */
+                        unsigned char ndigs;
+                        float value;
+
         BUFFERCS vComBuf;
         vComBuf.buf=_buffer;
         vComBuf.index=0;
@@ -850,7 +905,8 @@ void print_vprintf (U8 UartX,const U8 *fmt, va_list ap)
                                                    UartB_write(vComBuf.buf,vComBuf.index);
                                                 else if(UartX==2)
                                                     UartC_write(vComBuf.buf,vComBuf.index);                                                
-                                                    return;} 
+                                                    return;
+                                                } 
                                         flags |= FL_PREC;
                                         continue;
                                 }
@@ -875,12 +931,12 @@ void print_vprintf (U8 UartX,const U8 *fmt, va_list ap)
 
                 } else if (c >= 'e' && c <= 'g') {
 
-                        int exp;                /* exponent of master decimal digit     */
-                        int n;
-                        unsigned char vtype;    /* result of float value parse  */
-                        unsigned char sign;     /* sign character (or 0)        */
-                        unsigned char ndigs;
-                        float value;
+                        // int exp;                /* exponent of master decimal digit     */
+                        // int n;
+                        // unsigned char vtype;     result of float value parse  
+                        // unsigned char sign;     /* sign character (or 0)        */
+                        // unsigned char ndigs;
+                        // float value;
                         flags &= ~FL_FLTUPP;
 
                 flt_oper:
@@ -894,7 +950,7 @@ void print_vprintf (U8 UartX,const U8 *fmt, va_list ap)
                                 flags |= FL_FLTFIX;
                         } else if (prec > 0)
                                 prec -= 1;
-                        if ((flags & FL_FLTFIX) && fabs(value) > 9999999) {
+                        if ((flags & FL_FLTFIX) && (fabs(value) > 9999999)) {
                                 flags = (flags & ~FL_FLTFIX) | FL_FLTEXP;
                         }
 
@@ -1215,14 +1271,7 @@ void print_vprintf (U8 UartX,const U8 *fmt, va_list ap)
                         width--;
                 }
         } /* for (;;) */
-	
-//    if(UartX==0)
-//       UartA_write(vComBuf.buf,vComBuf.index);
-//    else if(UartX==1)
-//       UartB_write(vComBuf.buf,vComBuf.index);
-//    else if(UartX==2)
-//        UartC_write(vComBuf.buf,vComBuf.index);
-}
+	}
 
 
 void UCprintf(const U8 *fmt, ...)
@@ -1236,9 +1285,13 @@ void UCprintf(const U8 *fmt, ...)
 void UAprintf(const U8 *fmt, ...)
 {
     va_list arg_list;
+    // U8 buf[256];
+    // memset(buf,0,256);
     va_start(arg_list, fmt);
-    print_vprintf (0,fmt, arg_list);
+     print_vprintf (0,fmt, arg_list);
+    //sprintf(buf,fmt,arg_list);
     va_end(arg_list);
+    //UartA_write(buf,strlen(buf));
 }
 
 

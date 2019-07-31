@@ -42,7 +42,9 @@ OF SUCH DAMAGE.
 #include "main.h"
 #include "gd32f303e_eval.h"
 #include "hardware.h"
-
+#include "TLE5012B.h"
+#include "FOCdriver.h"
+#include "flash_para.h"
 /*!
     \brief      toggle the led every 500ms
     \param[in]  none
@@ -69,69 +71,94 @@ void led_spark(void)
 void nvic_config(void)
 {
     nvic_priority_group_set(NVIC_PRIGROUP_PRE1_SUB3);
-    nvic_irq_enable(TIMER7_Channel_IRQn, 1, 0);//pwm in capture
+    nvic_irq_enable(TIMER7_Channel_IRQn, 1, 2);//pwm in capture
+    /////////////////////////////////
+    nvic_irq_enable(DMA0_Channel0_IRQn,0,2);//for ADC_dma
+    // nvic_irq_enable(DMA0_Channel1_IRQn, 1, 1);
+    // nvic_irq_enable(DMA0_Channel3_IRQn,1,0);
 
-    nvic_irq_enable(DMA0_Channel1_IRQn, 1, 1);
-    nvic_irq_enable(DMA0_Channel3_IRQn,1,2);
     /// timer4 ISR at 10Khz
     nvic_irq_enable(TIMER4_IRQn, 0, 1); 
     ////systemtick
     nvic_irq_enable(SysTick_IRQn, 0, 0);
 
+    
+
 }
 
+
+void gloable_led_initial(void)
+{
+    rcu_periph_clock_enable(RCU_GPIOC);
+    gpio_init(GPIOC, GPIO_MODE_OUT_PP, GPIO_OSPEED_50MHZ,GPIO_PIN_13|GPIO_PIN_7);
+}
 /*!
     \brief      main function
     \param[in]  none
     \param[out] none
     \retval     none
 */
-U32 tmp=0;
+U32 tmp=0,tmp2;
 int main(void)
 {  float i=0,a,b;
     U16 dataLen=0,datalen2=0;
     
-    systick_config();
+    systick_config(1000);
     nvic_config();
-    gd_eval_led_init(LED2);
-    gd_eval_led_init(LED3);
+    gloable_led_initial();
+    PORTn_BITx_OUT(GPIOC,13)=0;// gd_eval_led_init(LED2);
+    PORTn_BITx_OUT(GPIOC,7)=0;
+    gloable_led_initial();//gd_eval_led_init(LED3);
     UartC_DmaInitial(USART2);
     UartA_DmaInitial(USART0);
+    adc_dma_config();
+	  delay_1ms(10);
+    UartA_write("system start now \r\n",19);//UAprintf("system start now \r\n");
     PWM_PPM_inInitial();
-    TLE5012B_initialise();
-    PWMoutInitial();
-    Timerx_Init(10000,120);//will start the motor.
+    /////////////////////
+    FOC_control_initialise();
+
+    tmp = micros();
+    PORTn_BITx_OUT(GPIOC,13)=1;// gd_eval_led_init(LED2);
+    PORTn_BITx_OUT(GPIOC,7)=1;
+    tmp2 = micros();
+
     while(1){
         /* turn on led2, turn off led5 */
-        gd_eval_led_on(LED2);
-        delay_1ms(100);
+        TOGGLE_GPIOx_PIN(GPIOC,LEDA);
+        delay_1ms(10);
         /* turn on led3, turn off led2 */
-        gd_eval_led_on(LED3);
-        gd_eval_led_off(LED2);
-        delay_1ms(100);
-        gd_eval_led_off(LED3);
-        delay_1ms(100);
-        i+=0.5f;
-        a=b+i;
-        b=i+1;
+        TOGGLE_GPIOx_PIN(GPIOC,LEDB);
+        TOGGLE_GPIOx_PIN(GPIOC,LEDA);
+        delay_1ms(10);
+        TOGGLE_GPIOx_PIN(GPIOC,LEDB);
+        delay_1ms(10);
+        i=readAnglesDegreesB(1);
+        b=readAnglesDegrees(1);
+        a=i+1;
+        
         dataLen = UartC_Available();
         datalen2 = UartA_Available();
-			   tmp = micros();
-         UCprintf("i=%f,b=%f,time=%dus\r\n",i,b,tmp);// ,Uart2Add=%x,,&(USART_DATA(USART2))
-        tmp = micros();
-			   UAprintf("i=%f,b=%f,time=%dus\r\n",i,b,tmp);
+
+///////////////////main function
+        //////SPWMF4_FeedBack_test_noBlock();
+
+		 UCprintf("i=%5.2f,b=%5.2f,time=%dus,Adc=%d\r\n",i,b,tmp2-tmp,adc_value);// ,Uart2Add=%x,,&(USART_DATA(USART2))
+         UAprintf("i=%5.2f,b=%5.2f,time=%dus,Adc=%d\r\n",i,b,tmp2-tmp,adc_value);
+          tmp = micros();
+        
        if(datalen2>0)
           {
             for(U16 m=0;m<datalen2;m++)
-            {  if(dataLen)
-               tmp = UartC_read();
-							if(datalen2)
-							 tmp = UartA_read();							
-						}
-						tmp = micros();
-           // UCprintf("i=%f,a=%f time=%d us\r\n",i,b,tmp);// ,Uart2Add=%x,,&(USART_DATA(USART2))
-            tmp = micros();
-						UAprintf("i=%f,a=%f time=%d us\r\n",i,b,tmp);
+            {      if(dataLen)
+                     tmp2 = UartC_read();
+					if(datalen2)
+					  tmp2 = UartA_read();							
+			}
+					 tmp2 = micros();
+           // UCprintf("i=%f,a=%f time=%d us\r\n",i,b,tmp2);// ,Uart2Add=%x,,&(USART_DATA(USART2))
+            tmp2 = micros();
+						UAprintf("PWM1=%d,PWM2=%d time=%d us,Frequs=%d\r\n",PWM1Value,PWM2Value,tmp2-tmp,Frequs);
           }
     }
 }

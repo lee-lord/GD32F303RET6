@@ -60,8 +60,11 @@ __inline uint32_t mills(void);
 __inline U32 micros(void);
 
 /* configure systick */
-void systick_config(void);
+void systick_config(U32 FrqHz);
 /* delay a time in milliseconds */
 void delay_1ms(uint32_t count);
+
+void delay_us(U32 XXus);
+
 
 #endif /* SYS_TICK_H */
